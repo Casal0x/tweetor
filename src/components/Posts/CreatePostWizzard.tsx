@@ -16,7 +16,7 @@ const CreatePostWizzard: React.FC = () => {
     e.preventDefault();
     if (!content) return;
     if (user?.id) {
-      mutate({ content, authorId: user.id });
+      mutate({ content });
     }
   };
 
