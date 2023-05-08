@@ -35,7 +35,7 @@ const addUserDataToPosts = async (posts: Post[]) => {
       if (!author.externalUsername) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `Author has no GitHub Account: ${author.id}`,
+          message: `Author has no External Account: ${author.id}`,
         });
       }
       author.username = author.externalUsername;
@@ -53,6 +53,7 @@ const addUserDataToPosts = async (posts: Post[]) => {
 export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     const posts = await ctx.prisma.post.findMany();
+    console.log("posts", posts);
     if (!posts) {
       throw new TRPCError({
         code: "NOT_FOUND",

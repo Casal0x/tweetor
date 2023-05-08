@@ -3,11 +3,8 @@ import { type NextPage } from "next";
 import CreatePostWizzard from "~/components/Posts/CreatePostWizzard";
 import Button from "~/components/Base/Button";
 
-import { api } from "~/utils/api";
-
 const Home: NextPage = () => {
   const { isSignedIn, isLoaded: userLoaded } = useUser();
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   if (!userLoaded) return null;
 
@@ -18,17 +15,15 @@ const Home: NextPage = () => {
         <div className="col-span-12 flex flex-col gap-2 border-x-2 border-x-slate-500/25 md:col-span-6 ">
           <div className="w-100 mb-10 flex border-b-2  border-y-slate-500/50">
             {!isSignedIn ? (
-              <Button>
-                <SignInButton mode="modal" />
-              </Button>
+              <SignInButton mode="modal" />
             ) : (
               <CreatePostWizzard />
             )}
           </div>
 
-          <p className="text-2xl text-white">
+          {/* <p className="text-2xl text-white">
             {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-          </p>
+          </p> */}
         </div>
         <div className="col-span-12 md:col-span-3">Feed</div>
       </main>

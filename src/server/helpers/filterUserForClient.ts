@@ -1,6 +1,6 @@
 import type { User } from "@clerk/nextjs/dist/api";
 
-const providers = ["google", "oauth_google", "oauth_github", "github"];
+export const providers = ["google", "oauth_google", "oauth_github", "github"];
 
 export const filterUserForClient = (user: User) => {
   return {
@@ -8,8 +8,24 @@ export const filterUserForClient = (user: User) => {
     username: user.username,
     profileImageUrl: user.profileImageUrl,
     externalUsername:
-      user.externalAccounts.find((externalAccount) =>
-        providers.includes(externalAccount.provider)
-      )?.username || null,
+      user.externalAccounts.find((externalAccount) => {
+        const provider = providers.includes(externalAccount.provider);
+
+        return provider;
+      })?.username || null,
   };
+};
+
+export const hasUsername = (user: User) => {
+  if (!user.username) {
+    const externalUsername =
+      user.externalAccounts.find((externalAccount) => {
+        const provider = providers.includes(externalAccount.provider);
+
+        return provider;
+      })?.username || false;
+
+    return externalUsername;
+  }
+  return user.username;
 };

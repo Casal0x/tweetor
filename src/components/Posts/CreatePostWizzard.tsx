@@ -1,5 +1,5 @@
 import React from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
@@ -8,6 +8,7 @@ import { api } from "~/utils/api";
 
 const CreatePostWizzard: React.FC = () => {
   const { user } = useUser();
+  const { signOut } = useAuth();
   const [content, setContent] = React.useState("");
 
   const { mutate } = api.post.createPost.useMutation();
@@ -20,7 +21,10 @@ const CreatePostWizzard: React.FC = () => {
     }
   };
 
-  console.log(user);
+  const handleSignOut = () => {
+    signOut().catch(console.log);
+  };
+
   if (!user) return null;
 
   return (
@@ -84,6 +88,18 @@ const CreatePostWizzard: React.FC = () => {
                     )}
                     Settings
                   </Link>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    className={`${
+                      active ? "bg-violet-500 text-white" : "text-white"
+                    } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                    onClick={handleSignOut}
+                  >
+                    Log out
+                  </button>
                 )}
               </Menu.Item>
             </div>

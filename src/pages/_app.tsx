@@ -3,9 +3,10 @@ import Head from "next/head";
 
 import { api } from "~/utils/api";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 
 import "~/styles/globals.css";
+import ProfileGenerator from "~/helpers/ProfileGenerator";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -17,7 +18,14 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           content="This is tweetor another tweeter clone as portfolio side-project"
         />
       </Head>
-      <Component {...pageProps} />
+      <SignedIn>
+        <ProfileGenerator>
+          <Component {...pageProps} />
+        </ProfileGenerator>
+      </SignedIn>
+      <SignedOut>
+        <Component {...pageProps} />
+      </SignedOut>
     </ClerkProvider>
   );
 };

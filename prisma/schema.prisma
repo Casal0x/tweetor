@@ -18,15 +18,42 @@ model Example {
     updatedAt DateTime @updatedAt
 }
 
+model Profile {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    bio      String? @db.VarChar(255)
+    username String  @unique @db.VarChar(255)
+
+    userId String
+
+    @@index([userId])
+}
+
 model Post {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    content String //@db.VarChar(255)
+    content String @db.VarChar(255)
 
     authorId String
+    Likes    Likes[]
 
     @@index([authorId])
+}
+
+model Likes {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    post   Post   @relation(fields: [postId], references: [id])
+    postId String
+
+    @@index([postId])
 }
