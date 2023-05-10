@@ -1,7 +1,6 @@
 import React from "react";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
-import { useUser } from "@clerk/nextjs";
 import LoadingSpinner from "~/components/Base/LoadingSpinner";
 
 interface ProfileGeneratorProps {
@@ -10,23 +9,24 @@ interface ProfileGeneratorProps {
 
 const ProfileGenerator: React.FC<ProfileGeneratorProps> = ({ children }) => {
   const router = useRouter();
-  const { user } = useUser();
+  const { data, isFetching } = api.profile.getProfileById.useQuery();
 
-  if (user?.id && router.pathname !== "/profile/create") {
-    const { data } = api.profile.getProfileById.useQuery({
-      id: user.id,
-    });
-    if (!data) {
+  if (data && router.pathname === "/profile/create")
+    router.push("/").catch(console.error);
+
+  if (data || router.pathname === "/profile/create") return <>{children}</>;
+
+  if (!isFetching) {
+    if (!data && router.pathname !== "/profile/create") {
       router.push("/profile/create").catch(console.error);
     }
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <LoadingSpinner size={16} />
-      </div>
-    );
-  } else {
-    return <>{children}</>;
   }
+
+  return (
+    <div className="flex h-screen w-screen items-center justify-center">
+      <LoadingSpinner size={16} />
+    </div>
+  );
 };
 
 export default ProfileGenerator;

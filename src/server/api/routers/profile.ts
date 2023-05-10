@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -26,17 +25,15 @@ const profileRouter = createTRPCRouter({
         return profile;
       }
     }),
-  getProfileById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const profile = await ctx.prisma.profile.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+  getProfileById: publicProcedure.query(async ({ ctx }) => {
+    const profile = await ctx.prisma.profile.findFirst({
+      where: {
+        userId: ctx.userId || "",
+      },
+    });
 
-      return profile;
-    }),
+    return profile;
+  }),
 });
 
 export default profileRouter;

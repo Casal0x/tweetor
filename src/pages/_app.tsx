@@ -18,14 +18,16 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           content="This is tweetor another tweeter clone as portfolio side-project"
         />
       </Head>
-      <SignedIn>
-        <ProfileGenerator>
+      <div className="bg-gradient-to-b from-[#15162c] to-[#2e026d]">
+        <SignedIn>
+          <ProfileGenerator>
+            <Component {...pageProps} />
+          </ProfileGenerator>
+        </SignedIn>
+        <SignedOut>
           <Component {...pageProps} />
-        </ProfileGenerator>
-      </SignedIn>
-      <SignedOut>
-        <Component {...pageProps} />
-      </SignedOut>
+        </SignedOut>
+      </div>
     </ClerkProvider>
   );
 };
