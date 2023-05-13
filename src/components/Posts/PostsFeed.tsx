@@ -1,14 +1,29 @@
-import React from "react";
+import React, { useRef } from "react";
 import { api } from "~/utils/api";
 import LoadingSpinner from "../Base/LoadingSpinner";
 import { PostView } from "./PostView";
 
 const PostsFeed: React.FC = () => {
-  const { data, isLoading: postsLoading } = api.post.getAll.useQuery();
+  const {
+    data,
+    isLoading: postsLoading,
+    isRefetching,
+  } = api.post.getAll.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+  const postFeed = React.useRef<HTMLDivElement>(null);
 
-  if (postsLoading)
+  React.useEffect(() => {
+    postFeed.current?.scroll({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [isRefetching]);
+
+  if (postsLoading || isRefetching)
     return (
-      <div className="flex grow">
+      <div className="mt-10 flex w-full justify-center">
         <LoadingSpinner />
       </div>
     );
@@ -16,7 +31,7 @@ const PostsFeed: React.FC = () => {
   if (!data) return <div>Something went wrong</div>;
 
   return (
-    <div className="flex grow flex-col overflow-y-scroll">
+    <div ref={postFeed} className="flex h-96 grow flex-col overflow-y-scroll">
       {data.map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
