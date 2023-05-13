@@ -10,8 +10,17 @@ const CreatePostWizzard: React.FC = () => {
   const { user } = useUser();
   const { signOut } = useAuth();
   const [content, setContent] = React.useState("");
+  const ctx = api.useContext();
 
-  const { mutate } = api.post.createPost.useMutation();
+  const { mutate } = api.post.createPost.useMutation({
+    async onSuccess() {
+      setContent("");
+      await ctx.post.getAll.invalidate();
+    },
+    onError(error) {
+      console.log(error);
+    },
+  });
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,9 +73,9 @@ const CreatePostWizzard: React.FC = () => {
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                   >
                     {active ? (
-                      <p className="mr-2 h-5 w-5" aria-hidden="true" />
+                      <i className="fa-regular fa-user mr-2" />
                     ) : (
-                      <p className="mr-2 h-5 w-5" aria-hidden="true" />
+                      <i className="fa-regular fa-user mr-2" />
                     )}
                     Profile
                   </Link>
@@ -82,9 +91,9 @@ const CreatePostWizzard: React.FC = () => {
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                   >
                     {active ? (
-                      <p className="mr-2 h-5 w-5" aria-hidden="true" />
+                      <i className="fa-solid fa-gear mr-2" />
                     ) : (
-                      <p className="mr-2 h-5 w-5" aria-hidden="true" />
+                      <i className="fa-solid fa-gear mr-2" />
                     )}
                     Settings
                   </Link>
@@ -98,6 +107,11 @@ const CreatePostWizzard: React.FC = () => {
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                     onClick={handleSignOut}
                   >
+                    {active ? (
+                      <i className="fa-solid fa-right-from-bracket mr-2" />
+                    ) : (
+                      <i className="fa-solid fa-right-from-bracket mr-2" />
+                    )}
                     Log out
                   </button>
                 )}

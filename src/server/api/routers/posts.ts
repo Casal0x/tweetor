@@ -9,9 +9,23 @@ import {
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { filterUserForClient } from "~/server/helpers/filterUserForClient";
-import type { Post } from "@prisma/client";
+import type { ReturnedUser } from "~/server/helpers/filterUserForClient";
+import type { Post, PrismaClient, Profile } from "@prisma/client";
 
-const addUserDataToPosts = async (posts: Post[]) => {
+type Context = {
+  prisma: PrismaClient;
+  userId: string | null;
+};
+
+type UsersProfileResults = {
+  users: ReturnedUser[];
+  profiles: Profile[];
+};
+
+const getUsersProfiles = async (
+  ctx: Context,
+  posts: Post[]
+): Promise<UsersProfileResults> => {
   const userId = posts.map((post) => post.authorId);
   const users = (
     await clerkClient.users.getUserList({
@@ -20,8 +34,23 @@ const addUserDataToPosts = async (posts: Post[]) => {
     })
   ).map(filterUserForClient);
 
+  const profiles = await ctx.prisma.profile.findMany({
+    where: {
+      userId: {
+        in: userId,
+      },
+    },
+  });
+
+  return { users, profiles };
+};
+
+const addUserDataToPosts = (
+  posts: Post[],
+  { profiles }: UsersProfileResults
+) => {
   return posts.map((post) => {
-    const author = users.find((user) => user.id === post.authorId);
+    const author = profiles.find((user) => user.userId === post.authorId);
 
     if (!author) {
       console.error("AUTHOR NOT FOUND", post);
@@ -32,13 +61,10 @@ const addUserDataToPosts = async (posts: Post[]) => {
     }
     if (!author.username) {
       // user the ExternalUsername
-      if (!author.externalUsername) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Author has no External Account: ${author.id}`,
-        });
-      }
-      author.username = author.externalUsername;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Author has no External Account: ${author.id}`,
+      });
     }
     return {
       post,
@@ -52,15 +78,21 @@ const addUserDataToPosts = async (posts: Post[]) => {
 
 export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const posts = await ctx.prisma.post.findMany();
-    console.log("posts", posts);
+    const posts = await ctx.prisma.post.findMany({
+      orderBy: { createdAt: "desc" },
+      //generate pagination
+      take: 100,
+    });
+
     if (!posts) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "No posts found.",
       });
     }
-    return await addUserDataToPosts(posts);
+    const usersProfiles = await getUsersProfiles(ctx, posts);
+
+    return addUserDataToPosts(posts, usersProfiles);
   }),
   getById: publicProcedure
     .input(
@@ -80,10 +112,11 @@ export const postRouter = createTRPCRouter({
           message: "No post found.",
         });
       }
+      const usersProfiles = await getUsersProfiles(ctx, [post]);
 
-      return (await addUserDataToPosts([post]))[0];
+      return addUserDataToPosts([post], usersProfiles)[0];
     }),
-  getPostsByUser: publicProcedure
+  getPostsByUserId: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
       const userPosts = await ctx.prisma.post.findMany({
@@ -92,8 +125,9 @@ export const postRouter = createTRPCRouter({
         },
         orderBy: { createdAt: "desc" },
       });
-
-      return await addUserDataToPosts(userPosts);
+      // console.log("userPosts", userPosts);
+      const usersProfiles = await getUsersProfiles(ctx, userPosts);
+      return addUserDataToPosts(userPosts, usersProfiles);
     }),
   createPost: privateProcedure
     .input(

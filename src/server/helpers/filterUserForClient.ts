@@ -2,7 +2,14 @@ import type { User } from "@clerk/nextjs/dist/api";
 
 export const providers = ["google", "oauth_google", "oauth_github", "github"];
 
-export const filterUserForClient = (user: User) => {
+export type ReturnedUser = {
+  id: string;
+  username: string | null;
+  profileImageUrl: string | null;
+  externalUsername: string | null;
+};
+
+export const filterUserForClient = (user: User): ReturnedUser => {
   return {
     id: user.id,
     username: user.username,

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 const usernameRegex = /^[a-zA-Z0-9]+$/;
 
@@ -11,12 +11,13 @@ const ProfileForm: React.FC = () => {
   const [error, setError] = useState("");
   const { mutate } = api.profile.setProfile.useMutation();
   const utils = api.useContext();
+  const { user } = useUser();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (username && usernameRegex.test(username)) {
       mutate(
-        { username },
+        { username, profileImageUrl: user?.profileImageUrl || "" },
         {
           async onSuccess() {
             await utils.profile.getProfileById.invalidate();

@@ -24,10 +24,12 @@ model Profile {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    bio      String? @db.VarChar(255)
-    username String  @unique @db.VarChar(255)
-    role     String  @default("user") @db.VarChar(255)
-    userId   String  @unique
+    bio             String? @db.VarChar(255)
+    username        String  @unique @db.VarChar(255)
+    role            String  @default("user") @db.VarChar(255)
+    profileImageUrl String  @db.VarChar(255)
+
+    userId String @unique
 
     @@index([userId])
 }

@@ -1,6 +1,7 @@
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import CreatePostWizzard from "~/components/Posts/CreatePostWizzard";
+import PostsFeed from "~/components/Posts/PostsFeed";
 import PageLayout from "~/layouts/PageLayout";
 
 const Home: NextPage = () => {
@@ -14,9 +15,7 @@ const Home: NextPage = () => {
         {!isSignedIn ? <SignInButton mode="modal" /> : <CreatePostWizzard />}
       </div>
 
-      {/* <p className="text-2xl text-white">
-            {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-          </p> */}
+      <PostsFeed />
     </PageLayout>
   );
 };
