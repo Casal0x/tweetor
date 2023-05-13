@@ -2,12 +2,19 @@ import React from "react";
 import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import LoadingSpinner from "~/components/Base/LoadingSpinner";
+import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { getAuth, buildClerkProps } from "@clerk/nextjs/server";
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+} from "next";
 
 interface ProfileGeneratorProps {
   children: React.ReactNode;
 }
 
-const ProfileGenerator: React.FC<ProfileGeneratorProps> = ({ children }) => {
+const ProfileGenerator = ({ children }: ProfileGeneratorProps) => {
   const router = useRouter();
   const { data, isFetching } = api.profile.getProfileById.useQuery();
 
@@ -27,6 +34,26 @@ const ProfileGenerator: React.FC<ProfileGeneratorProps> = ({ children }) => {
       <LoadingSpinner size={16} />
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async (
+  ctx: GetServerSidePropsContext
+): Promise<GetServerSidePropsResult<{ [key: string]: any }>> => {
+  const ssg = generateSSGHelper();
+
+  const { userId } = getAuth(ctx.req);
+  if (!userId) {
+    // handle user is not logged in.
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+  await ssg.profile.getProfileByUserId.prefetch({ userId });
+
+  return { props: { ...buildClerkProps(ctx.req), trpcState: ssg.dehydrate() } };
 };
 
 export default ProfileGenerator;
