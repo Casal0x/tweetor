@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { api } from "~/utils/api";
+import LoadingSpinner from "../Base/LoadingSpinner";
 
 const CreatePostWizzard: React.FC = () => {
   const { user } = useUser();
@@ -12,7 +13,7 @@ const CreatePostWizzard: React.FC = () => {
   const [content, setContent] = React.useState("");
   const ctx = api.useContext();
 
-  const { mutate } = api.post.createPost.useMutation({
+  const { mutate, isLoading } = api.post.createPost.useMutation({
     async onSuccess() {
       setContent("");
       await ctx.post.getAll.invalidate();
@@ -133,9 +134,17 @@ const CreatePostWizzard: React.FC = () => {
           <button
             className="ml-auto rounded bg-violet-500 px-4 py-2 font-bold text-white hover:bg-violet-600 disabled:cursor-default disabled:bg-violet-400 disabled:hover:bg-violet-400"
             type="submit"
-            disabled={!(content.length > 0)}
+            disabled={!(content.length > 0) || isLoading}
           >
-            Send <i className="fa-regular fa-paper-plane"></i>
+            {!isLoading ? (
+              <>
+                Send <i className="fa-regular fa-paper-plane"></i>
+              </>
+            ) : (
+              <span className="flex">
+                <LoadingSpinner /> <span className="ml-2">Posting...</span>
+              </span>
+            )}
           </button>
         </div>
       </form>
