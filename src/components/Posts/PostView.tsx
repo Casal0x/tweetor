@@ -19,7 +19,7 @@ export const PostView = (props: PostWithUser) => {
         width={56}
         height={56}
       />
-      <div className="flex flex-col">
+      <div className="flex w-full flex-col">
         <div className="flex gap-1 text-slate-300">
           <Link href={`/@${author.username}`}>
             <span>{`@${author.username} `}</span>
@@ -30,7 +30,14 @@ export const PostView = (props: PostWithUser) => {
             ).fromNow()}`}</span>
           </Link>
         </div>
-        <span className="text-2xl">{post.content}</span>
+        <div>
+          <span className="text-2xl">{post.content}</span>
+        </div>
+        <div className="flex w-full flex-row-reverse">
+          <button className="rounded-full px-1 hover:bg-pink-400/50">
+            <i className="fa-regular fa-heart" /> 0
+          </button>
+        </div>
       </div>
     </div>
   );

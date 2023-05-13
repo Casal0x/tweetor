@@ -131,7 +131,7 @@ const CreatePostWizzard: React.FC = () => {
         />
         <div className="flex">
           <button
-            className="ml-auto mr-3 rounded bg-violet-500 px-4 py-2 font-bold text-white hover:bg-violet-600 disabled:cursor-default disabled:bg-violet-200 disabled:hover:bg-violet-200"
+            className="ml-auto rounded bg-violet-500 px-4 py-2 font-bold text-white hover:bg-violet-600 disabled:cursor-default disabled:bg-violet-400 disabled:hover:bg-violet-400"
             type="submit"
             disabled={!(content.length > 0)}
           >

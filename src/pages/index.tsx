@@ -11,7 +11,7 @@ const Home: NextPage = () => {
 
   return (
     <PageLayout>
-      <div className="w-100 mb-10 flex border-b-2  border-y-slate-500/50">
+      <div className="w-100  flex border-b-2  border-y-slate-500/50">
         {!isSignedIn ? <SignInButton mode="modal" /> : <CreatePostWizzard />}
       </div>
 

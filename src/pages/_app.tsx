@@ -15,7 +15,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <title>Tweetor</title>
         <meta
           name="description"
-          content="This is tweetor another tweeter clone as portfolio side-project"
+          content="This is tweetor another twitter clone as portfolio side-project"
         />
       </Head>
       <div className="bg-gradient-to-b from-[#15162c] to-[#2e026d]">
