@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "../assets/css/fontawesome.css";
+@import "../assets/css/fontawesome.min.css";
+@import "../assets/css/all.min.css";
 @import "../assets/css/solid.css";
-@import "../assets/css/brands.css";
 @import "../assets/css/regular.css";
+@import "../assets/css/brands.css";

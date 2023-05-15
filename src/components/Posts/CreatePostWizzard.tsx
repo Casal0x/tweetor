@@ -38,7 +38,7 @@ const CreatePostWizzard: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="mx-6 my-6 flex w-full">
+    <div className="mx-6 my-6 flex w-full pt-10 sm:pt-0 ">
       <Menu as="div" className="relative inline-block">
         <div>
           <Menu.Button className="relative h-20 w-20">

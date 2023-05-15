@@ -1,4 +1,4 @@
-import type { GetStaticProps, NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import Image from "next/image";
@@ -26,7 +26,12 @@ const ProfileFeed = (props: { userId: string }) => {
   );
 };
 
-const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
+interface IPageProps {
+  username: string;
+  deviceType: "mobile" | "desktop";
+}
+
+const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
   const { user } = useUser();
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
@@ -37,8 +42,8 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
       <Head>
         <title>{data.username}</title>
       </Head>
-      <PageLayout>
-        <div className="relative h-36 bg-slate-600">
+      <PageLayout deviceType={deviceType}>
+        <div className="relative mt-14 h-36 bg-slate-600 sm:mt-0">
           <Image
             src={data.profileImageUrl}
             alt={`${data.username ?? "unknown"}'s profile pic`}
@@ -58,26 +63,56 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps = async (context) => {
+// eslint-disable-next-line @typescript-eslint/require-await
+export const getServerSideProps: GetServerSideProps<IPageProps> = async (
+  ctx
+) => {
+  const UA = ctx.req.headers["user-agent"] ?? "";
+
+  const isMobile = Boolean(
+    UA.match(
+      /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
+    )
+  );
   const ssg = generateSSGHelper();
 
-  const slug = context.params?.slug;
+  const slug = ctx.params?.slug;
 
   if (typeof slug !== "string") throw new Error("no slug");
 
   const username = slug.replace("@", "");
 
   await ssg.profile.getUserByUsername.prefetch({ username });
+
   return {
     props: {
       trpcState: ssg.dehydrate(),
       username,
+      deviceType: isMobile ? "mobile" : "desktop",
     },
   };
 };
 
-export const getStaticPaths = () => {
-  return { paths: [], fallback: "blocking" };
-};
+// export const getStaticProps: GetStaticProps = async (context) => {
+//   const ssg = generateSSGHelper();
+
+//   const slug = context.params?.slug;
+
+//   if (typeof slug !== "string") throw new Error("no slug");
+
+//   const username = slug.replace("@", "");
+
+//   await ssg.profile.getUserByUsername.prefetch({ username });
+//   return {
+//     props: {
+//       trpcState: ssg.dehydrate(),
+//       username,
+//     },
+//   };
+// };
+
+// export const getStaticPaths = () => {
+//   return { paths: [], fallback: "blocking" };
+// };
 
 export default ProfilePage;
