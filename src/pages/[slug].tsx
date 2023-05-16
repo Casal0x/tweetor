@@ -6,7 +6,6 @@ import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import PageLayout from "~/layouts/PageLayout";
 import LoadingSpinner from "~/components/Base/LoadingSpinner";
 import { PostView } from "~/components/Posts/PostView";
-import { useUser } from "@clerk/nextjs";
 
 const ProfileFeed = (props: { userId: string }) => {
   const { data, isLoading } = api.post.getPostsByUserId.useQuery({
@@ -18,7 +17,7 @@ const ProfileFeed = (props: { userId: string }) => {
   if (!data || data.length === 0) return <div>User has not posted</div>;
 
   return (
-    <div className="flex flex-col">
+    <div className="h-96 grow flex-col overflow-y-scroll">
       {data.map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
@@ -32,7 +31,6 @@ interface IPageProps {
 }
 
 const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
-  const { user } = useUser();
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
   });
@@ -57,7 +55,7 @@ const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
           data.username ?? "unknown"
         }`}</div>
         <div className="w-full border-b border-slate-400" />
-        <ProfileFeed userId={user?.id || ""} />
+        <ProfileFeed userId={data.userId} />
       </PageLayout>
     </>
   );
@@ -92,27 +90,5 @@ export const getServerSideProps: GetServerSideProps<IPageProps> = async (
     },
   };
 };
-
-// export const getStaticProps: GetStaticProps = async (context) => {
-//   const ssg = generateSSGHelper();
-
-//   const slug = context.params?.slug;
-
-//   if (typeof slug !== "string") throw new Error("no slug");
-
-//   const username = slug.replace("@", "");
-
-//   await ssg.profile.getUserByUsername.prefetch({ username });
-//   return {
-//     props: {
-//       trpcState: ssg.dehydrate(),
-//       username,
-//     },
-//   };
-// };
-
-// export const getStaticPaths = () => {
-//   return { paths: [], fallback: "blocking" };
-// };
 
 export default ProfilePage;
