@@ -1,6 +1,8 @@
 import { Fragment, useState } from "react";
 import { Transition } from "@headlessui/react";
 import Link from "next/link";
+import UserButton from "~/components/Base/UserButton";
+import { useUser } from "@clerk/nextjs";
 
 interface IProps {
   username?: string;
@@ -8,6 +10,7 @@ interface IProps {
 
 const MobileMenu = ({ username }: IProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -39,39 +42,46 @@ const MobileMenu = ({ username }: IProps) => {
         leaveTo="opacity-0"
       >
         <div className="fixed left-0 top-0 z-50 mr-5 flex h-full w-full flex-col items-start bg-gradient-to-b from-[#15162c] to-[#2e026d]">
-          <div className="my-2 ml-4 h-8 text-2xl">
-            <button onClick={toggleMenu}>
-              <i className="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-          <nav className="flex flex-col text-2xl font-bold text-white">
-            <Link
-              onClick={toggleMenu}
-              href="/"
-              className="px-4 py-2 hover:bg-gray-700"
-            >
-              <i className="fa-solid fa-house mr-3"></i>
-              Home
-            </Link>
-            {username && (
+          <div className="flex h-full flex-col">
+            <div className="my-2 ml-4 h-8 text-2xl">
+              <button onClick={toggleMenu}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <nav className="flex flex-col text-2xl font-bold text-white">
               <Link
                 onClick={toggleMenu}
-                href={`/@${username}`}
+                href="/"
                 className="px-4 py-2 hover:bg-gray-700"
               >
-                <i className="fa-solid fa-user mr-3"></i>
-                Profile
+                <i className="fa-solid fa-house mr-3"></i>
+                Home
               </Link>
-            )}
-            <Link
-              onClick={toggleMenu}
-              href="/"
-              className="px-4 py-2 hover:bg-gray-700"
-            >
-              <i className="fa-solid fa-right-from-bracket mr-2" />
-              Log out
-            </Link>
-          </nav>
+              {username && (
+                <Link
+                  onClick={toggleMenu}
+                  href={`/@${username}`}
+                  className="px-4 py-2 hover:bg-gray-700"
+                >
+                  <i className="fa-solid fa-user mr-3"></i>
+                  Profile
+                </Link>
+              )}
+              <Link
+                onClick={toggleMenu}
+                href="/"
+                className="px-4 py-2 hover:bg-gray-700"
+              >
+                <i className="fa-solid fa-right-from-bracket mr-2" />
+                Log out
+              </Link>
+            </nav>
+          </div>
+          {username && user && (
+            <div>
+              <UserButton username={username} user={user} />
+            </div>
+          )}
         </div>
       </Transition>
     </>
