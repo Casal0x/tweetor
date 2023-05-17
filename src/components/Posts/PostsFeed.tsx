@@ -2,6 +2,7 @@ import React from "react";
 import { api } from "~/utils/api";
 import LoadingSpinner from "../Base/LoadingSpinner";
 import { PostView } from "./PostView";
+import { useUser } from "@clerk/nextjs";
 
 const PostsFeed: React.FC = () => {
   const {
@@ -13,6 +14,7 @@ const PostsFeed: React.FC = () => {
     refetchOnMount: false,
   });
   const postFeed = React.useRef<HTMLDivElement>(null);
+  const profile = api.profile.getProfileById.useQuery();
 
   React.useEffect(() => {
     postFeed.current?.scroll({
@@ -33,7 +35,10 @@ const PostsFeed: React.FC = () => {
   return (
     <div ref={postFeed} className="flex h-96 grow flex-col overflow-y-scroll">
       {data.map((fullPost) => (
-        <PostView {...fullPost} key={fullPost.post.id} />
+        <PostView
+          {...{ ...fullPost, profile: profile.data || null }}
+          key={fullPost.post.id}
+        />
       ))}
     </div>
   );

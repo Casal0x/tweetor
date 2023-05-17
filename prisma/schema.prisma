@@ -52,16 +52,13 @@ model Post {
 }
 
 model Likes {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-    post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-    postId    String
     profileId String
+    postId    String
 
+    profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@id([profileId, postId])
     @@index([profileId])
     @@index([postId])
 }

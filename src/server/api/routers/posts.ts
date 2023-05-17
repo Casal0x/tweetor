@@ -125,7 +125,7 @@ export const postRouter = createTRPCRouter({
         },
         orderBy: { createdAt: "desc" },
       });
-      // console.log("userPosts", userPosts);
+
       const usersProfiles = await getUsersProfiles(ctx, userPosts);
       return addUserDataToPosts(userPosts, usersProfiles);
     }),
@@ -154,5 +154,40 @@ export const postRouter = createTRPCRouter({
       });
 
       return post;
+    }),
+  toggleLike: privateProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ input: { postId }, ctx }) => {
+      const authorId = ctx.userId;
+      const profile = await ctx.prisma.profile.findUnique({
+        where: {
+          userId: authorId,
+        },
+      });
+
+      if (!profile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No profile found.",
+        });
+      }
+
+      const data = { profileId: profile.id, postId };
+
+      const existingLike = await ctx.prisma.likes.findUnique({
+        where: {
+          profileId_postId: data,
+        },
+      });
+
+      console.log(existingLike);
+
+      if (existingLike == null) {
+        await ctx.prisma.likes.create({ data });
+        return { addedLike: true };
+      } else {
+        await ctx.prisma.likes.delete({ where: { profileId_postId: data } });
+        return { addedLike: false };
+      }
     }),
 });
