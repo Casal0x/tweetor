@@ -15,7 +15,7 @@ const CreatePostWizzard: React.FC = () => {
   const { mutate, isLoading } = api.post.createPost.useMutation({
     async onSuccess() {
       setContent("");
-      await ctx.post.getAll.invalidate();
+      await ctx.post.infinitePostFeed.invalidate();
     },
     onError(error) {
       console.log(error);

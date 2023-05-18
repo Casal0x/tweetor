@@ -4,23 +4,29 @@ import { api } from "~/utils/api";
 import Image from "next/image";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import PageLayout from "~/layouts/PageLayout";
-import LoadingSpinner from "~/components/Base/LoadingSpinner";
-import { PostView } from "~/components/Posts/PostView";
+import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
 
-const ProfileFeed = (props: { userId: string }) => {
-  const { data, isLoading } = api.post.getPostsByUserId.useQuery({
-    userId: props.userId,
-  });
+const ProfileFeed = (props: { profileId: string }) => {
+  const posts = api.post.infiniteProfilePostFeed.useInfiniteQuery(
+    {
+      profileId: props.profileId,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
 
-  if (isLoading) return <LoadingSpinner />;
-
-  if (!data || data.length === 0) return <div>User has not posted</div>;
+  // if (data?.pages.length === 0) return <div>User has not posted</div>;
 
   return (
     <div className="h-96 grow flex-col overflow-y-scroll">
-      {data.map((fullPost) => (
-        <PostView {...fullPost} key={fullPost.post.id} />
-      ))}
+      <PostInifiniteFeed
+        posts={posts.data?.pages.flatMap((page) => page.posts)}
+        isLoading={posts.isLoading}
+        isError={posts.isError}
+        hasMore={posts.hasNextPage}
+        fetchNewPosts={posts.fetchNextPage}
+      />
     </div>
   );
 };
@@ -55,7 +61,7 @@ const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
           data.username ?? "unknown"
         }`}</div>
         <div className="w-full border-b border-slate-400" />
-        <ProfileFeed userId={data.userId} />
+        <ProfileFeed profileId={data.id} />
       </PageLayout>
     </>
   );

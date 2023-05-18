@@ -1,8 +1,10 @@
 import { SignInButton, useUser } from "@clerk/nextjs";
 import type { GetServerSideProps, NextPage } from "next";
 import CreatePostWizzard from "~/components/Posts/CreatePostWizzard";
-import PostsFeed from "~/components/Posts/PostsFeed";
+import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
+// import PostsFeed from "~/components/Posts/PostsFeed";
 import PageLayout from "~/layouts/PageLayout";
+import { api } from "~/utils/api";
 
 interface IProps {
   deviceType: "mobile" | "desktop";
@@ -19,10 +21,29 @@ const Home: NextPage<IProps> = ({ deviceType }) => {
         {!isSignedIn ? <SignInButton mode="modal" /> : <CreatePostWizzard />}
       </div>
 
-      <PostsFeed />
+      <RecentPosts />
     </PageLayout>
   );
 };
+
+function RecentPosts() {
+  const posts = api.post.infinitePostFeed.useInfiniteQuery(
+    {},
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  return (
+    <PostInifiniteFeed
+      posts={posts.data?.pages.flatMap((page) => page.posts)}
+      isLoading={posts.isLoading}
+      isError={posts.isError}
+      fetchNewPosts={posts.fetchNextPage}
+      hasMore={posts.hasNextPage}
+    />
+  );
+}
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const getServerSideProps: GetServerSideProps<IProps> = async (ctx) => {

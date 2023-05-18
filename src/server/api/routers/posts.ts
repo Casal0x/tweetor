@@ -6,11 +6,12 @@ import {
   createTRPCRouter,
   publicProcedure,
   privateProcedure,
+  type createTRPCContext,
 } from "~/server/api/trpc";
-import { TRPCError } from "@trpc/server";
+import { TRPCError, type inferAsyncReturnType } from "@trpc/server";
 import { filterUserForClient } from "~/server/helpers/filterUserForClient";
 import type { ReturnedUser } from "~/server/helpers/filterUserForClient";
-import type { Post, PrismaClient, Profile } from "@prisma/client";
+import type { Post, Prisma, PrismaClient, Profile } from "@prisma/client";
 
 type Context = {
   prisma: PrismaClient;
@@ -26,7 +27,7 @@ const getUsersProfiles = async (
   ctx: Context,
   posts: Post[]
 ): Promise<UsersProfileResults> => {
-  const userId = posts.map((post) => post.authorId);
+  const userId = posts.map((post) => post.profileId);
   const users = (
     await clerkClient.users.getUserList({
       userId: userId,
@@ -50,13 +51,13 @@ const addUserDataToPosts = (
   { profiles }: UsersProfileResults
 ) => {
   return posts.map((post) => {
-    const author = profiles.find((user) => user.userId === post.authorId);
+    const author = profiles.find((user) => user.userId === post.profileId);
 
     if (!author) {
       console.error("AUTHOR NOT FOUND", post);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: `Author for post not found. POST ID: ${post.id}, USER ID: ${post.authorId}`,
+        message: `Author for post not found. POST ID: ${post.id}, USER ID: ${post.profileId}`,
       });
     }
     if (!author.username) {
@@ -77,51 +78,86 @@ const addUserDataToPosts = (
 };
 
 export const postRouter = createTRPCRouter({
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    const posts = await ctx.prisma.post.findMany({
-      orderBy: { createdAt: "desc" },
-      //generate pagination
-      take: 100,
-    });
-
-    if (!posts) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No posts found.",
-      });
-    }
-    const usersProfiles = await getUsersProfiles(ctx, posts);
-
-    return addUserDataToPosts(posts, usersProfiles);
-  }),
-  getById: publicProcedure
+  infinitePostFeed: publicProcedure
     .input(
       z.object({
-        id: z.string(),
+        onlyFollowing: z.boolean().optional(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
       })
     )
-    .query(async ({ ctx, input }) => {
-      const post = await ctx.prisma.post.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No post found.",
+    .query(
+      async ({ input: { limit = 10, onlyFollowing = false, cursor }, ctx }) => {
+        const currentUserId = ctx?.userId;
+        const profile = await ctx.prisma.profile.findUnique({
+          where: {
+            userId: currentUserId || "",
+          },
+        });
+
+        const profileId = profile?.id;
+
+        return await getInfinitePosts({
+          limit,
+          ctx,
+          cursor,
+          whereClause:
+            profileId == null || !onlyFollowing
+              ? undefined
+              : {
+                  profile: {
+                    followers: { some: { id: profileId } },
+                  },
+                },
         });
       }
-      const usersProfiles = await getUsersProfiles(ctx, [post]);
-
-      return addUserDataToPosts([post], usersProfiles)[0];
+    ),
+  infiniteProfilePostFeed: publicProcedure
+    .input(
+      z.object({
+        profileId: z.string(),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ input: { limit = 10, cursor, profileId }, ctx }) => {
+      return await getInfinitePosts({
+        limit,
+        ctx,
+        cursor,
+        whereClause: {
+          profileId: profileId,
+        },
+      });
     }),
+  // getById: publicProcedure
+  //   .input(
+  //     z.object({
+  //       id: z.string(),
+  //     })
+  //   )
+  //   .query(async ({ ctx, input }) => {
+  //     const post = await ctx.prisma.post.findUnique({
+  //       where: {
+  //         id: input.id,
+  //       },
+  //     });
+  //     if (!post) {
+  //       throw new TRPCError({
+  //         code: "NOT_FOUND",
+  //         message: "No post found.",
+  //       });
+  //     }
+  //     const usersProfiles = await getUsersProfiles(ctx, [post]);
+
+  //     return addUserDataToPosts([post], usersProfiles)[0];
+  //   }),
   getPostsByUserId: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ profileId: z.string() }))
     .query(async ({ ctx, input }) => {
       const userPosts = await ctx.prisma.post.findMany({
         where: {
-          authorId: input.userId,
+          profileId: input.profileId,
         },
         orderBy: { createdAt: "desc" },
       });
@@ -137,6 +173,18 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const authorId = ctx.userId;
+      const profile = await ctx.prisma.profile.findUnique({
+        where: {
+          userId: authorId,
+        },
+      });
+
+      if (!profile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No profile found.",
+        });
+      }
 
       const { success } = await ratelimit.limit(authorId);
       if (!success) {
@@ -149,7 +197,7 @@ export const postRouter = createTRPCRouter({
       const post = await ctx.prisma.post.create({
         data: {
           content: input.content,
-          authorId,
+          profileId: profile.id,
         },
       });
 
@@ -191,3 +239,66 @@ export const postRouter = createTRPCRouter({
       }
     }),
 });
+
+async function getInfinitePosts({
+  whereClause,
+  ctx,
+  limit,
+  cursor,
+}: {
+  whereClause?: Prisma.PostWhereInput;
+  limit: number;
+  cursor: { id: string; createdAt: Date } | undefined;
+  ctx: inferAsyncReturnType<typeof createTRPCContext>;
+}) {
+  const currentUserId = ctx.userId;
+  const profile = await ctx.prisma.profile.findUnique({
+    where: {
+      userId: currentUserId || "",
+    },
+  });
+
+  const data = await ctx.prisma.post.findMany({
+    take: limit + 1,
+    cursor: cursor ? { createdAt_id: cursor } : undefined,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    where: whereClause,
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      _count: { select: { likes: true } },
+      likes: profile?.id == null ? false : { where: { profileId: profile.id } },
+      profile: {
+        select: {
+          id: true,
+          profileImageUrl: true,
+          username: true,
+          userId: true,
+        },
+      },
+    },
+  });
+
+  let nextCursor: typeof cursor | undefined;
+  if (data.length > limit) {
+    const nextItem = data.pop();
+    if (nextItem != null) {
+      nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+    }
+  }
+
+  return {
+    posts: data.map((post) => {
+      return {
+        id: post.id,
+        content: post.content,
+        createdAt: post.createdAt,
+        likeCount: post._count.likes,
+        profile: post.profile,
+        likedByMe: post.likes?.length > 0,
+      };
+    }),
+    nextCursor,
+  };
+}

@@ -33,6 +33,7 @@ model Profile {
 
     following Profile[] @relation(name: "Followers")
     followers Profile[] @relation(name: "Followers")
+    Post      Post[]
 
     @@index([userId])
 }
@@ -45,10 +46,12 @@ model Post {
 
     content String @db.VarChar(255)
 
-    authorId String
-    likes    Likes[]
+    profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    profileId String
+    likes     Likes[]
 
-    @@index([authorId])
+    @@unique([createdAt, id])
+    @@index([profileId])
 }
 
 model Likes {
