@@ -28,7 +28,7 @@ export const PostView = ({
 }: PostViewProps) => {
   const { isSignedIn } = useUser();
   const trpcUtils = api.useContext();
-  const { mutate } = api.post.toggleLike.useMutation({
+  const { mutate, isLoading } = api.post.toggleLike.useMutation({
     onSuccess: ({ addedLike }) => {
       const updateData: Parameters<
         typeof trpcUtils.post.infinitePostFeed.setInfiniteData
@@ -42,7 +42,7 @@ export const PostView = ({
           pages: oldData.pages.map((page) => {
             return {
               ...page,
-              tweets: page.posts.map((post) => {
+              posts: page.posts.map((post) => {
                 if (post.id === id) {
                   return {
                     ...post,
@@ -101,6 +101,7 @@ export const PostView = ({
           {isSignedIn ? (
             <button
               onClick={handleLike}
+              disabled={isLoading}
               className="rounded-full px-1 hover:bg-pink-400/50"
             >
               <i

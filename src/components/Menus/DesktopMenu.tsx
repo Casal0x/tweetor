@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import { useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import UserButton from "~/components/Base/UserButton";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 };
 
 const DesktopMenu = ({ username }: Props) => {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
 
   return (
     <nav className="col-span-12 flex flex-col items-end justify-between md:col-span-3">
@@ -41,9 +41,16 @@ const DesktopMenu = ({ username }: Props) => {
           )}
         </ul>
       </div>
-      {username && user && (
+      {isSignedIn && username && (
         <div className="user-menu mb-4 flex w-full flex-row-reverse pr-2">
           <UserButton username={username} user={user} />
+        </div>
+      )}
+
+      {!isSignedIn && (
+        <div className="mb-4 mr-2 w-2/5 rounded-full bg-sky-500 py-2 text-center text-xl text-white">
+          <i className="fa-solid fa-right-to-bracket mr-2"></i>
+          <SignInButton mode="modal" />
         </div>
       )}
     </nav>

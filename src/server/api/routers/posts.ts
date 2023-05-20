@@ -130,28 +130,6 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-  // getById: publicProcedure
-  //   .input(
-  //     z.object({
-  //       id: z.string(),
-  //     })
-  //   )
-  //   .query(async ({ ctx, input }) => {
-  //     const post = await ctx.prisma.post.findUnique({
-  //       where: {
-  //         id: input.id,
-  //       },
-  //     });
-  //     if (!post) {
-  //       throw new TRPCError({
-  //         code: "NOT_FOUND",
-  //         message: "No post found.",
-  //       });
-  //     }
-  //     const usersProfiles = await getUsersProfiles(ctx, [post]);
-
-  //     return addUserDataToPosts([post], usersProfiles)[0];
-  //   }),
   getPostsByUserId: publicProcedure
     .input(z.object({ profileId: z.string() }))
     .query(async ({ ctx, input }) => {

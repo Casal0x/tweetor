@@ -10,12 +10,40 @@ const CreatePostWizzard: React.FC = () => {
   const { data: profile } = api.profile.getProfileById.useQuery();
 
   const [content, setContent] = React.useState("");
-  const ctx = api.useContext();
+  const trpcUtils = api.useContext();
 
   const { mutate, isLoading } = api.post.createPost.useMutation({
-    async onSuccess() {
+    onSuccess(newPost) {
       setContent("");
-      await ctx.post.infinitePostFeed.invalidate();
+      // await trpcUtils.post.infinitePostFeed.invalidate();
+      if (!user || !profile) return;
+
+      trpcUtils.post.infinitePostFeed.setInfiniteData({}, (oldData) => {
+        if (oldData == null || oldData.pages[0] == null) return;
+
+        const newCachedPost = {
+          ...newPost,
+          likeCount: 0,
+          likedByMe: false,
+          profile: {
+            id: profile.id,
+            username: profile.username,
+            profileImageUrl: profile.profileImageUrl,
+            userId: profile.userId,
+          },
+        };
+
+        return {
+          ...oldData,
+          pages: [
+            {
+              ...oldData.pages[0],
+              posts: [newCachedPost, ...oldData.pages[0].posts],
+            },
+            ...oldData.pages.slice(1),
+          ],
+        };
+      });
     },
     onError(error) {
       console.log(error);

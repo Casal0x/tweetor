@@ -17,7 +17,7 @@ const PageLayout: React.FC<IProps> = ({ children, deviceType }) => {
       <div className="col-span-12 flex flex-col gap-2 border-x-2 border-x-slate-500/25 md:col-span-6">
         {children}
       </div>
-      <div className="col-span-12 md:col-span-3">Feed</div>
+      <div className="col-span-12 hidden sm:block md:col-span-3"></div>
     </main>
   );
 };

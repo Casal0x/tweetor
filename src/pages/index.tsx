@@ -1,8 +1,7 @@
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import type { GetServerSideProps, NextPage } from "next";
 import CreatePostWizzard from "~/components/Posts/CreatePostWizzard";
 import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
-// import PostsFeed from "~/components/Posts/PostsFeed";
 import PageLayout from "~/layouts/PageLayout";
 import { api } from "~/utils/api";
 
@@ -18,7 +17,11 @@ const Home: NextPage<IProps> = ({ deviceType }) => {
   return (
     <PageLayout deviceType={deviceType}>
       <div className="w-100  flex border-b-2  border-y-slate-500/50">
-        {!isSignedIn ? <SignInButton mode="modal" /> : <CreatePostWizzard />}
+        {!isSignedIn ? (
+          <div className="p-4 text-2xl"> # Explore </div>
+        ) : (
+          <CreatePostWizzard />
+        )}
       </div>
 
       <RecentPosts />
