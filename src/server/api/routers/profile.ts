@@ -51,7 +51,7 @@ const profileRouter = createTRPCRouter({
               ? undefined
               : {
                   where: {
-                    id: currentUserId,
+                    userId: currentUserId,
                   },
                 },
         },
@@ -90,7 +90,7 @@ const profileRouter = createTRPCRouter({
             ? undefined
             : {
                 where: {
-                  id: currentUserId,
+                  userId: currentUserId,
                 },
               },
       },
@@ -107,6 +107,37 @@ const profileRouter = createTRPCRouter({
       ownProfile: currentUserId === profile.userId,
     };
   }),
+  toggleFollow: privateProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ input: { userId }, ctx }) => {
+      const currentUserId = ctx.userId || "";
+      const existingFollow = await ctx.prisma.profile.findFirst({
+        where: {
+          userId: userId,
+          followers: { some: { userId: currentUserId } },
+        },
+      });
+
+      let addedFollow;
+      if (existingFollow == null) {
+        await ctx.prisma.profile.update({
+          where: { userId: userId },
+          data: { followers: { connect: { userId: currentUserId } } },
+        });
+        addedFollow = true;
+      } else {
+        await ctx.prisma.profile.update({
+          where: { userId: userId },
+          data: { followers: { disconnect: { userId: currentUserId } } },
+        });
+        addedFollow = false;
+      }
+
+      // void ctx.revalidateSSG?.(`/profiles/${userId}`);
+      // void ctx.revalidateSSG?.(`/profiles/${currentUserId}`);
+
+      return { addedFollow };
+    }),
 });
 
 export default profileRouter;

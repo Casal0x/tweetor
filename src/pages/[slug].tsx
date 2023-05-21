@@ -6,6 +6,8 @@ import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import PageLayout from "~/layouts/PageLayout";
 import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
 import { useRouter } from "next/router";
+import { useAuth } from "@clerk/nextjs";
+import { classNames } from "~/helpers/ClassNames";
 
 const ProfileFeed = (props: { profileId: string }) => {
   const posts = api.post.infiniteProfilePostFeed.useInfiniteQuery(
@@ -32,16 +34,65 @@ const ProfileFeed = (props: { profileId: string }) => {
   );
 };
 
+const FollowButton = ({
+  userId,
+  isFollowing,
+  onClick,
+  isLoading,
+}: {
+  userId: string;
+  isFollowing: boolean;
+  onClick: () => void;
+  isLoading: boolean;
+}) => {
+  const { userId: currentUserId } = useAuth();
+
+  if (!currentUserId || userId === currentUserId) return null;
+
+  return (
+    <button
+      disabled={isLoading}
+      className={classNames(
+        "rounded-full px-4 py-1",
+        isFollowing
+          ? "bg-slate-500 hover:bg-slate-700"
+          : "bg-blue-400 hover:bg-blue-300"
+      )}
+      onClick={onClick}
+    >
+      {isFollowing ? "Unfollow" : "Follow"}
+    </button>
+  );
+};
+
 interface IPageProps {
   username: string;
 }
 
 const ProfilePage: NextPage<IPageProps> = ({ username }) => {
   const router = useRouter();
-  const { data, error } = api.profile.getUserByUsername.useQuery({
+  const trpcUtils = api.useContext();
+  const { data: profile, error } = api.profile.getUserByUsername.useQuery({
     username,
   });
-  if (!data || error) {
+
+  const toggleFollow = api.profile.toggleFollow.useMutation({
+    onSuccess: ({ addedFollow }) => {
+      trpcUtils.profile.getUserByUsername.setData({ username }, (oldData) => {
+        if (oldData == null) return;
+
+        const countModifier = addedFollow ? 1 : -1;
+
+        return {
+          ...oldData,
+          isFollowing: addedFollow,
+          followersCount: oldData.followersCount + countModifier,
+        };
+      });
+    },
+  });
+
+  if (!profile || error) {
     router.push("/404").catch(console.error);
     return null;
   }
@@ -49,24 +100,35 @@ const ProfilePage: NextPage<IPageProps> = ({ username }) => {
   return (
     <>
       <Head>
-        <title>{data.username}</title>
+        <title>{profile.username}</title>
       </Head>
       <PageLayout>
         <div className="relative mt-14 h-36 bg-slate-600 sm:mt-0">
           <Image
-            src={data.profileImageUrl}
-            alt={`${data.username ?? "unknown"}'s profile pic`}
+            src={profile.profileImageUrl}
+            alt={`${profile.username}'s profile pic`}
             width={128}
             height={128}
             className="absolute bottom-0 left-0 -mb-[64px] ml-4 rounded-full border-4 border-black bg-black"
           />
         </div>
         <div className="h-[64px]"></div>
-        <div className="p-4 text-2xl font-bold">{`@${
-          data.username ?? "unknown"
-        }`}</div>
-        <div className="w-full border-b border-slate-400" />
-        <ProfileFeed profileId={data.id} />
+        <div className="p-4 text-2xl font-bold">{`@${profile.username}`}</div>
+        <div className="flex w-full border-b border-slate-400">
+          <div className="flex flex-grow items-center pl-2">
+            {profile.postsCount} Posts - {profile.followersCount} Followers -{" "}
+            {profile.followsCount} Following
+          </div>
+          <div className="flex flex-1 justify-end pb-2 pr-2">
+            <FollowButton
+              userId={profile.userId}
+              isLoading={toggleFollow.isLoading}
+              onClick={() => toggleFollow.mutate({ userId: profile.userId })}
+              isFollowing={profile.isFollowing}
+            />
+          </div>
+        </div>
+        <ProfileFeed profileId={profile.id} />
       </PageLayout>
     </>
   );
