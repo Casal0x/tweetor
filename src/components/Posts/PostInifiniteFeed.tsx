@@ -18,6 +18,8 @@ type InfinitePostListProps = {
   hasMore: boolean | undefined;
   fetchNewPosts: () => Promise<unknown>;
   posts?: Post[];
+  noPostMessage?: string;
+  parentId?: string;
 };
 
 const PostInifiniteFeed = ({
@@ -26,6 +28,8 @@ const PostInifiniteFeed = ({
   isLoading,
   fetchNewPosts,
   hasMore = false,
+  noPostMessage = "No posts to show...",
+  parentId,
 }: InfinitePostListProps) => {
   if (isLoading)
     return (
@@ -37,22 +41,28 @@ const PostInifiniteFeed = ({
 
   if (posts == null || posts.length === 0) {
     return (
-      <h2 className="my-4 text-center text-2xl text-gray-500">No posts</h2>
+      <h2 className="my-4 text-center text-2xl text-gray-500">
+        {noPostMessage}
+      </h2>
     );
   }
   return (
-    <div>
-      <InfiniteScroll
-        dataLength={posts.length}
-        next={fetchNewPosts}
-        hasMore={hasMore}
-        loader={<LoadingSpinner />}
-      >
-        {posts.map((post) => {
-          return <PostView key={post.id} {...post} />;
-        })}
-      </InfiniteScroll>
-    </div>
+    <InfiniteScroll
+      scrollableTarget={parentId}
+      dataLength={posts.length}
+      next={fetchNewPosts}
+      hasMore={hasMore}
+      loader={
+        <div className="my-10 flex w-full justify-center">
+          <LoadingSpinner />
+        </div>
+      }
+      className="h-full"
+    >
+      {posts.map((post) => {
+        return <PostView key={post.id} {...post} />;
+      })}
+    </InfiniteScroll>
   );
 };
 

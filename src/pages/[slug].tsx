@@ -16,16 +16,16 @@ const ProfileFeed = (props: { profileId: string }) => {
     }
   );
 
-  // if (data?.pages.length === 0) return <div>User has not posted</div>;
-
   return (
-    <div className="h-96 grow flex-col overflow-y-scroll">
+    <div id="scrollablePanel" className="h-96 grow flex-col overflow-y-scroll">
       <PostInifiniteFeed
         posts={posts.data?.pages.flatMap((page) => page.posts)}
         isLoading={posts.isLoading}
         isError={posts.isError}
         hasMore={posts.hasNextPage}
         fetchNewPosts={posts.fetchNextPage}
+        noPostMessage="User has no posts..."
+        parentId="scrollablePanel"
       />
     </div>
   );
@@ -33,10 +33,9 @@ const ProfileFeed = (props: { profileId: string }) => {
 
 interface IPageProps {
   username: string;
-  deviceType: "mobile" | "desktop";
 }
 
-const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
+const ProfilePage: NextPage<IPageProps> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({
     username,
   });
@@ -46,7 +45,7 @@ const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
       <Head>
         <title>{data.username}</title>
       </Head>
-      <PageLayout deviceType={deviceType}>
+      <PageLayout>
         <div className="relative mt-14 h-36 bg-slate-600 sm:mt-0">
           <Image
             src={data.profileImageUrl}
@@ -71,13 +70,6 @@ const ProfilePage: NextPage<IPageProps> = ({ username, deviceType }) => {
 export const getServerSideProps: GetServerSideProps<IPageProps> = async (
   ctx
 ) => {
-  const UA = ctx.req.headers["user-agent"] ?? "";
-
-  const isMobile = Boolean(
-    UA.match(
-      /Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i
-    )
-  );
   const ssg = generateSSGHelper();
 
   const slug = ctx.params?.slug;
@@ -92,7 +84,6 @@ export const getServerSideProps: GetServerSideProps<IPageProps> = async (
     props: {
       trpcState: ssg.dehydrate(),
       username,
-      deviceType: isMobile ? "mobile" : "desktop",
     },
   };
 };

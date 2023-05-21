@@ -53,7 +53,7 @@ const ProfileForm: React.FC = () => {
     }
   };
   return (
-    <div className="flex h-screen w-screen flex-col items-center pt-6 ">
+    <div className="flex h-screen w-screen flex-col items-center pt-6 text-white">
       <h3 className="text-4xl">Almost there!</h3>
       <form onSubmit={handleSubmit}>
         <div className="my-8 w-96">

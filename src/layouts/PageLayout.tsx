@@ -10,7 +10,7 @@ const PageLayout: React.FC<IProps> = ({ children }) => {
   const { data } = api.profile.getProfileById.useQuery();
 
   return (
-    <main className="grid min-h-screen grid-cols-12">
+    <main className="grid min-h-screen grid-cols-12 text-white">
       <LeftSideBar username={data?.username} />
 
       <div className="col-span-12 flex flex-col border-x-2 border-x-slate-500/25 md:col-span-6">

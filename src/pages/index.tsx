@@ -46,7 +46,10 @@ const Home: NextPage = () => {
               Following
             </Tab>
           </Tab.List>
-          <Tab.Panels>
+          <Tab.Panels
+            id="scrollablePanel"
+            className="h-96 flex-grow overflow-y-scroll"
+          >
             <Tab.Panel>
               <RecentPosts />
             </Tab.Panel>
@@ -77,6 +80,7 @@ function RecentPosts() {
       isError={posts.isError}
       fetchNewPosts={posts.fetchNextPage}
       hasMore={posts.hasNextPage}
+      parentId="scrollablePanel"
     />
   );
 }
@@ -96,6 +100,7 @@ function PostInfiniteFollowingFeed() {
       isError={posts.isError}
       fetchNewPosts={posts.fetchNextPage}
       hasMore={posts.hasNextPage}
+      parentId="scrollablePanel"
     />
   );
 }
