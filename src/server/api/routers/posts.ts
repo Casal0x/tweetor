@@ -180,6 +180,8 @@ export const postRouter = createTRPCRouter({
         },
       });
 
+      void ctx.revalidateSSG?.(`/@${profile.username}`);
+
       return post;
     }),
   toggleLike: privateProcedure
