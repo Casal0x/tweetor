@@ -109,6 +109,7 @@ export const postRouter = createTRPCRouter({
                     followers: { some: { id: profileId } },
                   },
                 },
+          profileId: profile?.id,
         });
       }
     ),
@@ -223,19 +224,14 @@ async function getInfinitePosts({
   ctx,
   limit,
   cursor,
+  profileId,
 }: {
   whereClause?: Prisma.PostWhereInput;
   limit: number;
   cursor: { id: string; createdAt: Date } | undefined;
   ctx: inferAsyncReturnType<typeof createTRPCContext>;
+  profileId?: string;
 }) {
-  const currentUserId = ctx.userId;
-  const profile = await ctx.prisma.profile.findUnique({
-    where: {
-      userId: currentUserId || "",
-    },
-  });
-
   const data = await ctx.prisma.post.findMany({
     take: limit + 1,
     cursor: cursor ? { createdAt_id: cursor } : undefined,
@@ -246,7 +242,7 @@ async function getInfinitePosts({
       content: true,
       createdAt: true,
       _count: { select: { likes: true } },
-      likes: profile?.id == null ? false : { where: { profileId: profile.id } },
+      likes: profileId ? false : { where: { profileId } },
       profile: {
         select: {
           id: true,

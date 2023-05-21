@@ -83,7 +83,7 @@ function RecentPosts() {
 
 function PostInfiniteFollowingFeed() {
   const posts = api.post.infinitePostFeed.useInfiniteQuery(
-    {},
+    { onlyFollowing: true },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
