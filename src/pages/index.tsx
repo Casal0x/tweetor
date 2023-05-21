@@ -60,7 +60,11 @@ const Home: NextPage = () => {
         </Tab.Group>
       )}
 
-      {!isSignedIn && <RecentPosts />}
+      {!isSignedIn && (
+        <div id="scrollablePanel" className="h-96 flex-grow overflow-y-scroll">
+          <RecentPosts />
+        </div>
+      )}
     </PageLayout>
   );
 };

@@ -7,8 +7,12 @@ import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 
 import "~/styles/globals.css";
 import ProfileGenerator from "~/helpers/ProfileGenerator";
+import { type GetServerSideProps } from "next";
+import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
+  const profile = api.profile.getProfileById.useQuery();
+
   return (
     <ClerkProvider {...pageProps}>
       <Head>
@@ -20,7 +24,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       </Head>
       <div className="bg-gradient-to-b from-[#15162c] to-[#2e026d]">
         <SignedIn>
-          <ProfileGenerator>
+          <ProfileGenerator profile={profile}>
             <Component {...pageProps} />
           </ProfileGenerator>
         </SignedIn>
@@ -30,6 +34,17 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       </div>
     </ClerkProvider>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const ssg = generateSSGHelper();
+  await ssg.profile.getProfileById.prefetch();
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    },
+  };
 };
 
 export default api.withTRPC(MyApp);

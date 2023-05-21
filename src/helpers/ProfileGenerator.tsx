@@ -1,15 +1,20 @@
 import React from "react";
-import { api } from "~/utils/api";
+import type { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import LoadingSpinner from "~/components/Base/LoadingSpinner";
+import type { inferAsyncReturnType } from "@trpc/server";
 
 interface ProfileGeneratorProps {
   children: React.ReactNode;
+  profile: inferAsyncReturnType<typeof api.profile.getProfileById.useQuery>;
 }
 
-const ProfileGenerator: React.FC<ProfileGeneratorProps> = ({ children }) => {
+const ProfileGenerator: React.FC<ProfileGeneratorProps> = ({
+  children,
+  profile,
+}) => {
   const router = useRouter();
-  const { data, isFetching } = api.profile.getProfileById.useQuery();
+  const { data, isFetching } = profile;
 
   if (data && router.pathname === "/profile/create")
     router.push("/").catch(console.error);

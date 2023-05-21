@@ -5,6 +5,7 @@ import Image from "next/image";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import PageLayout from "~/layouts/PageLayout";
 import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
+import { useRouter } from "next/router";
 
 const ProfileFeed = (props: { profileId: string }) => {
   const posts = api.post.infiniteProfilePostFeed.useInfiniteQuery(
@@ -36,10 +37,15 @@ interface IPageProps {
 }
 
 const ProfilePage: NextPage<IPageProps> = ({ username }) => {
-  const { data } = api.profile.getUserByUsername.useQuery({
+  const router = useRouter();
+  const { data, error } = api.profile.getUserByUsername.useQuery({
     username,
   });
-  if (!data) return <div>404</div>;
+  if (!data || error) {
+    router.push("/404").catch(console.error);
+    return null;
+  }
+
   return (
     <>
       <Head>
