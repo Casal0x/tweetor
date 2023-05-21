@@ -19,6 +19,18 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { prisma } from "~/server/db";
 
 // type CreateContextOptions = Record<string, never>;
+interface CreateContextOptions extends CreateNextContextOptions {
+  revalidateSSG:
+    | ((
+        urlPath: string,
+        opts?:
+          | {
+              unstable_onlyGenerated?: boolean | undefined;
+            }
+          | undefined
+      ) => Promise<void>)
+    | null;
+}
 
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
@@ -30,7 +42,7 @@ import { prisma } from "~/server/db";
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-const createInnerTRPCContext = (opts: CreateNextContextOptions) => {
+const createInnerTRPCContext = (opts: CreateContextOptions) => {
   const { req } = opts;
   const sesh = getAuth(req);
 
@@ -38,6 +50,7 @@ const createInnerTRPCContext = (opts: CreateNextContextOptions) => {
   return {
     prisma,
     userId,
+    revalidateSSG: opts.revalidateSSG,
   };
 };
 
@@ -48,7 +61,10 @@ const createInnerTRPCContext = (opts: CreateNextContextOptions) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext(_opts);
+  return createInnerTRPCContext({
+    ..._opts,
+    revalidateSSG: _opts.res.revalidate,
+  });
 };
 
 /**

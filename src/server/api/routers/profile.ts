@@ -133,8 +133,14 @@ const profileRouter = createTRPCRouter({
         addedFollow = false;
       }
 
-      // void ctx.revalidateSSG?.(`/profiles/${userId}`);
-      // void ctx.revalidateSSG?.(`/profiles/${currentUserId}`);
+      const currentProfile = await ctx.prisma.profile.findUnique({
+        where: { userId: currentUserId },
+      });
+
+      existingFollow &&
+        void ctx.revalidateSSG?.(`/@${existingFollow.username}`);
+      currentProfile &&
+        void ctx.revalidateSSG?.(`/@${currentProfile.username}`);
 
       return { addedFollow };
     }),
