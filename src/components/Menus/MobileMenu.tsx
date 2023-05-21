@@ -18,7 +18,7 @@ const MobileMenu = ({ username }: IProps) => {
 
   return (
     <>
-      <div className="fixed left-0 top-0 z-50 w-full">
+      <div className="fixed left-0 top-0 z-50 w-full sm:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             className="text-2xl text-gray-500 hover:text-gray-700 focus:text-gray-700 focus:outline-none"
@@ -41,9 +41,9 @@ const MobileMenu = ({ username }: IProps) => {
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <div className="fixed left-0 top-0 z-50 mr-5 flex h-full w-full flex-col items-start bg-gradient-to-b from-[#15162c] to-[#2e026d]">
+        <div className="fixed left-0 top-0 z-50 mr-5 flex h-full w-full flex-col items-start bg-gradient-to-b from-[#15162c] to-[#2e026d] sm:hidden">
           <div className="flex h-full flex-col">
-            <div className="my-2 ml-4 h-8 text-2xl">
+            <div className="my-2 ml-4 h-8 text-2xl text-white/50">
               <button onClick={toggleMenu}>
                 <i className="fa-solid fa-xmark"></i>
               </button>

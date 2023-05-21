@@ -75,7 +75,10 @@ export const PostView = ({
   };
 
   return (
-    <div key={id} className="flex gap-3 border-b border-slate-400/50 p-4">
+    <div
+      key={id}
+      className="flex gap-3 border-b border-slate-400/50 p-4 text-white"
+    >
       <Image
         src={profile.profileImageUrl || ""}
         className="h-14 w-14 rounded-full"

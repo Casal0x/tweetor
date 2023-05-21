@@ -11,7 +11,7 @@ const DesktopMenu = ({ username }: Props) => {
   const { user, isSignedIn } = useUser();
 
   return (
-    <nav className="col-span-12 flex flex-col items-end justify-between md:col-span-3">
+    <nav className="col-span-12 hidden flex-col items-end justify-between text-white sm:flex md:col-span-3">
       <div className="main-menu flex w-1/2 flex-col pr-2">
         <Link href="/">
           <i className="fa-solid fa-kiwi-bird p-4 pl-0 text-4xl" />
