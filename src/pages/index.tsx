@@ -1,7 +1,9 @@
 import { useUser } from "@clerk/nextjs";
+import { Tab } from "@headlessui/react";
 import type { NextPage } from "next";
 import CreatePostWizzard from "~/components/Posts/CreatePostWizzard";
 import PostInifiniteFeed from "~/components/Posts/PostInifiniteFeed";
+import { classNames } from "~/helpers/ClassNames";
 import PageLayout from "~/layouts/PageLayout";
 import { api } from "~/utils/api";
 
@@ -20,12 +22,66 @@ const Home: NextPage = () => {
         )}
       </div>
 
-      <RecentPosts />
+      {isSignedIn && (
+        <Tab.Group>
+          <Tab.List className="flex w-full border-b-2 border-b-slate-500/50 text-2xl text-white">
+            <Tab
+              className={({ selected }) =>
+                classNames(
+                  "flex-grow py-5 outline-none",
+                  selected ? "bg-slate-500/50" : "bg-transparent"
+                )
+              }
+            >
+              Explore
+            </Tab>
+            <Tab
+              className={({ selected }) =>
+                classNames(
+                  "flex-grow py-5 outline-none",
+                  selected ? "bg-slate-500/50" : "bg-transparent"
+                )
+              }
+            >
+              Following
+            </Tab>
+          </Tab.List>
+          <Tab.Panels>
+            <Tab.Panel>
+              <RecentPosts />
+            </Tab.Panel>
+            <Tab.Panel>
+              <PostInfiniteFollowingFeed />
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+      )}
+
+      {!isSignedIn && <RecentPosts />}
     </PageLayout>
   );
 };
 
 function RecentPosts() {
+  const posts = api.post.infinitePostFeed.useInfiniteQuery(
+    {},
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  return (
+    <PostInifiniteFeed
+      posts={posts.data?.pages.flatMap((page) => page.posts)}
+      isLoading={posts.isLoading}
+      isError={posts.isError}
+      fetchNewPosts={posts.fetchNextPage}
+      hasMore={posts.hasNextPage}
+    />
+  );
+}
+
+function PostInfiniteFollowingFeed() {
   const posts = api.post.infinitePostFeed.useInfiniteQuery(
     {},
     {
