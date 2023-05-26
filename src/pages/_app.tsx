@@ -22,7 +22,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           content="This is tweetor another twitter clone as portfolio side-project"
         />
       </Head>
-      <div className="bg-gradient-to-b from-[#15162c] to-[#2e026d]">
+      <main className="bg-gradient-to-b from-[#15162c] to-[#2e026d]">
         <SignedIn>
           <ProfileGenerator profile={profile}>
             <Component {...pageProps} />
@@ -31,7 +31,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <SignedOut>
           <Component {...pageProps} />
         </SignedOut>
-      </div>
+      </main>
     </ClerkProvider>
   );
 };

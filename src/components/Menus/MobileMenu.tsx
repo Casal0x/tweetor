@@ -2,7 +2,8 @@ import { Fragment, useState } from "react";
 import { Transition } from "@headlessui/react";
 import Link from "next/link";
 import UserButton from "~/components/Base/UserButton";
-import { useUser } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/clerk-react";
 
 interface IProps {
   username?: string;
@@ -18,7 +19,7 @@ const MobileMenu = ({ username }: IProps) => {
 
   return (
     <>
-      <div className="fixed left-0 top-0 z-50 w-full sm:hidden">
+      <div className="fixed left-0 top-0 z-50 w-full bg-indigo-950 sm:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             className="text-2xl text-gray-500 hover:text-gray-700 focus:text-gray-700 focus:outline-none"
@@ -58,23 +59,37 @@ const MobileMenu = ({ username }: IProps) => {
                 Home
               </Link>
               {username && (
-                <Link
-                  onClick={toggleMenu}
-                  href={`/@${username}`}
-                  className="px-4 py-2 hover:bg-gray-700"
-                >
-                  <i className="fa-solid fa-user mr-3"></i>
-                  Profile
-                </Link>
+                <>
+                  <Link
+                    onClick={toggleMenu}
+                    href={`/@${username}`}
+                    className="px-4 py-2 hover:bg-gray-700"
+                  >
+                    <i className="fa-solid fa-user mr-3"></i>
+                    Profile
+                  </Link>
+                  <SignOutButton>
+                    <button
+                      onClick={toggleMenu}
+                      className="px-4 py-2 hover:bg-gray-700"
+                    >
+                      <i className="fa-solid fa-right-from-bracket mr-2" />
+                      Log out
+                    </button>
+                  </SignOutButton>
+                </>
               )}
-              <Link
-                onClick={toggleMenu}
-                href="/"
-                className="px-4 py-2 hover:bg-gray-700"
-              >
-                <i className="fa-solid fa-right-from-bracket mr-2" />
-                Log out
-              </Link>
+              {!username && (
+                <SignInButton mode="modal">
+                  <button
+                    onClick={toggleMenu}
+                    className="px-4 py-2 hover:bg-gray-700"
+                  >
+                    <i className="fa-solid fa-right-from-bracket mr-2" />
+                    Sign In
+                  </button>
+                </SignInButton>
+              )}
             </nav>
           </div>
           {username && user && (

@@ -103,7 +103,7 @@ const ProfilePage: NextPage<IPageProps> = ({ username }) => {
         <title>{profile.username}</title>
       </Head>
       <PageLayout>
-        <div className="relative mt-14 h-36 bg-slate-600 sm:mt-0">
+        <div className="relative h-36 bg-slate-600">
           <Image
             src={profile.profileImageUrl}
             alt={`${profile.username}'s profile pic`}
