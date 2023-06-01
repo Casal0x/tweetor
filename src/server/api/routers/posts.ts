@@ -89,12 +89,15 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, cursor } = input;
 
-      const data = await ctx.prisma.post.findMany({
-        take: pageSize + 1,
-        skip: (page - 1) * pageSize,
-        cursor: cursor ? { createdAt_id: cursor } : undefined,
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      });
+      const [count, data] = await ctx.prisma.$transaction([
+        ctx.prisma.post.count(),
+        ctx.prisma.post.findMany({
+          take: pageSize + 1,
+          skip: (page - 1) * pageSize,
+          cursor: cursor ? { createdAt_id: cursor } : undefined,
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        }),
+      ]);
 
       let nextCursor: typeof cursor | undefined;
       if (data.length > pageSize) {
@@ -104,6 +107,7 @@ export const postRouter = createTRPCRouter({
         }
       }
       return {
+        count,
         posts: data,
         cursor: nextCursor,
       };

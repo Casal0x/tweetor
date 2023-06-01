@@ -13,11 +13,13 @@ const test: NextPage = () => {
 
 const PaginatedComponent: FC = () => {
   const [pageIndex, setPageIndex] = useState(1);
+  const [count, setCount] = useState<number>(0);
   const [data, setData] = useState<Post[]>([]);
+  const pageSize = 2;
   const posts = api.post.paginatedPostFeed.useInfiniteQuery(
     {
       page: pageIndex,
-      pageSize: 2,
+      pageSize,
     },
     {
       getNextPageParam: (lastPage) => lastPage.cursor,
@@ -27,7 +29,14 @@ const PaginatedComponent: FC = () => {
   useEffect(() => {
     if (posts.data) {
       setData(posts.data.pages.flatMap((page) => page.posts));
+
+      if (!count) {
+        setCount(
+          (posts.data.pages.flatMap((page) => page.count)[0] || 0) / pageSize
+        );
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts.data]);
 
   return (
@@ -54,6 +63,22 @@ const PaginatedComponent: FC = () => {
         >
           Next
         </button>
+        <input
+          type="number"
+          value={pageIndex}
+          onChange={(e) =>
+            setPageIndex(
+              parseInt(e.target.value)
+                ? parseInt(e.target.value) > count
+                  ? count
+                  : parseInt(e.target.value)
+                : 1
+            )
+          }
+          max={count}
+          min={1}
+          className="w-24 rounded-xl border-2 px-4 py-2 text-black"
+        />
       </div>
     </div>
   );
