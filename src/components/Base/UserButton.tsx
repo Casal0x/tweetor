@@ -53,7 +53,7 @@ const UserButton = ({ username, user }: IProps) => {
             <Menu.Item>
               {({ active }) => (
                 <Link
-                  href={`/profile/${user.id}`}
+                  href={`/@${username}`}
                   className={`${
                     active ? "bg-violet-500 text-white" : "text-white"
                   } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
@@ -67,7 +67,7 @@ const UserButton = ({ username, user }: IProps) => {
                 </Link>
               )}
             </Menu.Item>
-
+            {/* 
             <Menu.Item>
               {({ active }) => (
                 <Link
@@ -84,7 +84,7 @@ const UserButton = ({ username, user }: IProps) => {
                   Settings
                 </Link>
               )}
-            </Menu.Item>
+            </Menu.Item> */}
             <Menu.Item>
               {({ active }) => (
                 <button
