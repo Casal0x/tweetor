@@ -78,6 +78,36 @@ const addUserDataToPosts = (
 };
 
 export const postRouter = createTRPCRouter({
+  paginatedPostFeed: publicProcedure
+    .input(
+      z.object({
+        page: z.number(),
+        pageSize: z.number().default(10),
+        cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { page, pageSize, cursor } = input;
+
+      const data = await ctx.prisma.post.findMany({
+        take: pageSize + 1,
+        skip: (page - 1) * pageSize,
+        cursor: cursor ? { createdAt_id: cursor } : undefined,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (data.length > pageSize) {
+        const nextItem = data.pop();
+        if (nextItem != null) {
+          nextCursor = { id: nextItem.id, createdAt: nextItem.createdAt };
+        }
+      }
+      return {
+        posts: data,
+        cursor: nextCursor,
+      };
+    }),
   infinitePostFeed: publicProcedure
     .input(
       z.object({
