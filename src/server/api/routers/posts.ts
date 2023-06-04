@@ -84,21 +84,40 @@ export const postRouter = createTRPCRouter({
         page: z.number(),
         pageSize: z.number().default(10),
         cursor: z.object({ id: z.string(), createdAt: z.date() }).optional(),
+        where: z.object({ username: z.string() }).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, cursor } = input;
+      const { page, pageSize, cursor, where } = input;
 
       const [count, data] = await ctx.prisma.$transaction([
-        ctx.prisma.post.count(),
+        ctx.prisma.post.count({
+          where:
+            where && where.username
+              ? { profile: { username: where.username } }
+              : undefined,
+        }),
         ctx.prisma.post.findMany({
           take: pageSize + 1,
           skip: (page - 1) * pageSize,
           cursor: cursor ? { createdAt_id: cursor } : undefined,
           orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          where:
+            where && where.username
+              ? { profile: { username: where.username } }
+              : undefined,
+          include: {
+            profile: {
+              select: {
+                id: true,
+                profileImageUrl: true,
+                username: true,
+                userId: true,
+              },
+            },
+          },
         }),
       ]);
-
       let nextCursor: typeof cursor | undefined;
       if (data.length > pageSize) {
         const nextItem = data.pop();
