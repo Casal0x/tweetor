@@ -13,7 +13,6 @@ const test: NextPage = () => {
 
 const PaginatedComponent: FC = () => {
   const [pageIndex, setPageIndex] = useState(1);
-  const [count, setCount] = useState<number>(0);
   const [filter, setSetFilter] = useState<string>("");
   const pageSize = 2;
   const posts = api.post.paginatedPostFeed.useInfiniteQuery(
