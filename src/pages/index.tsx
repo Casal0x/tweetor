@@ -16,7 +16,7 @@ const Home: NextPage = () => {
     <PageLayout>
       <div className="w-100  flex border-b-2  border-y-slate-500/50">
         {!isSignedIn ? (
-          <div className="p-4 py-16 text-2xl"> # Explore </div>
+          <div className="p-4 py-16 text-2xl"> # Explore! </div>
         ) : (
           <CreatePostWizzard />
         )}
