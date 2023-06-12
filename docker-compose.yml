@@ -9,7 +9,7 @@ services:
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     working_dir: /app
     ports:
-      - "9008:3000"
+      - "9009:3000"
     image: tweetor
     environment:
       - DATABASE_URL=${DATABASE_URL}
