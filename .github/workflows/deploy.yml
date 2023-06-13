@@ -27,7 +27,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           source: "."
-          target: "/home/casal0x/Documents/Projects/nextjs/tweetor2"
+          target: "/home/casal0x/Documents/Projects/nextjs/tweetor"
 
       - name: Executing remote command
         uses: appleboy/ssh-action@master
@@ -37,7 +37,7 @@ jobs:
           PORT: ${{ secrets.PORT }}
           PASSWORD: ${{ secrets.PASSWORD }}
           script: |
-            cd /home/casal0x/Documents/Projects/nextjs/tweetor2
+            cd /home/casal0x/Documents/Projects/nextjs/tweetor
             ls
 
       # - name: Deploy using ssh to vps
