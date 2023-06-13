@@ -40,7 +40,7 @@ jobs:
             cd /home/casal0x/Documents/Projects/nextjs/tweetor
             git pull origin main
             docker stop tweetor
-            docker compost up -d --build
+            docker compose up -d --build
 
       # - name: Deploy using ssh to vps
       #   uses: appleboy/ssh-action@master
