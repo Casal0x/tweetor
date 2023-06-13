@@ -39,7 +39,7 @@ jobs:
           script: |
             cd /home/casal0x/Documents/Projects/nextjs/tweetor
             git pull origin main
-            ls
+            # ls
 
       # - name: Deploy using ssh to vps
       #   uses: appleboy/ssh-action@master
