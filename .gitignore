@@ -43,3 +43,6 @@ yarn-error.log*
 
 #notes
 .notes
+
+#workflows
+.github/workflows/deploy.yml
