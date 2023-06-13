@@ -2,6 +2,7 @@ version: "3.9"
 services:
   app:
     platform: "linux/amd64"
+    container_name: tweetor
     build:
       context: .
       dockerfile: Dockerfile

@@ -45,4 +45,4 @@ yarn-error.log*
 .notes
 
 #workflows
-.github/workflows/deploy.yml
+/backups/*
