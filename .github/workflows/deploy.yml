@@ -17,18 +17,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # - uses: actions/checkout@v3
-
-      # - name: copy file via ssh password
-      #   uses: appleboy/scp-action@v0.1.4
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     password: ${{ secrets.PASSWORD }}
-      #     port: ${{ secrets.PORT }}
-      #     source: "."
-      #     target: "/home/casal0x/Documents/Projects/nextjs/tweetor"
-
       - name: Executing remote command
         uses: appleboy/ssh-action@master
         with:
@@ -39,19 +27,6 @@ jobs:
           script: |
             cd /home/casal0x/Documents/Projects/nextjs/tweetor
             git pull origin main
+            docker compose build --no-cache
             docker stop tweetor
-            docker compose up -d --build
-
-      # - name: Deploy using ssh to vps
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.PRIVATE_KEY }}
-      #     port: 22
-      #     script: |
-      #       cd ~/home/casal0x/Documents/Projects/nextjs
-      #       git pull origin docker
-      #       git status
-      #       npm install --only=prod
-      #       pm2 restart node1
+            docker compose up -d
